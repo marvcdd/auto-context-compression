@@ -1,4 +1,4 @@
-# 文档索引 / Documentation Index
+﻿# 文档索引 / Documentation Index
 
 项目根目录只保留 [README.md](../README.md) 和 [README.en.md](../README.en.md)；其余文档统一放在 `docs/`。
 
@@ -13,7 +13,9 @@ The repository root keeps only [README.md](../README.md) and [README.en.md](../R
 
 ## English
 
-- [GITHUB.en.md](GITHUB.en.md): complete command checklist for uploading to GitHub.
-- [SECURITY_REVIEW.en.md](SECURITY_REVIEW.en.md): whole-project security review report.
-- [WEBSOCKET_REVIEW.en.md](WEBSOCKET_REVIEW.en.md): dedicated WebSocket self-review.
-- [VERIFICATION.en.md](VERIFICATION.en.md): test and real-world verification record.
+English documents are grouped under [`en/`](en/README.md).
+
+- [GITHUB.en.md](en/GITHUB.en.md): complete command checklist for uploading to GitHub.
+- [SECURITY_REVIEW.en.md](en/SECURITY_REVIEW.en.md): whole-project security review report.
+- [WEBSOCKET_REVIEW.en.md](en/WEBSOCKET_REVIEW.en.md): dedicated WebSocket self-review.
+- [VERIFICATION.en.md](en/VERIFICATION.en.md): test and real-world verification record.

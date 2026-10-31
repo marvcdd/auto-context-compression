@@ -1,6 +1,6 @@
 ﻿# WebSocket 服务自审报告
 
-> [English](./WEBSOCKET_REVIEW.en.md) | 简体中文
+> [English](./en/WEBSOCKET_REVIEW.en.md) | 简体中文
 
 日期：2026-10-31  
 审核对象：[`lib/ws.js`](../lib/ws.js) 及其 Host/Client 接入  

@@ -1,9 +1,9 @@
-﻿English version of [WEBSOCKET_REVIEW.md](./WEBSOCKET_REVIEW.md).
+﻿English version of [WEBSOCKET_REVIEW.md](../WEBSOCKET_REVIEW.md).
 
 # WebSocket service self-review report
 
 Date: 2026-10-31  
-Audit target: [`lib/ws.js`](../lib/ws.js) and its Host/Client integration  
+Audit target: [`lib/ws.js`](../../lib/ws.js) and its Host/Client integration  
 Runtime: DSH Desktop, Web GUI `http://127.0.0.1:51890`, Windows, Node.js 24  
 Method: line-by-line source review + unit tests + real local handshake/push verification  
 Purpose: for external reviewers to re-check; does not represent an independent third-party security audit
@@ -296,7 +296,7 @@ GET http://127.0.0.1:51890/auto-context-compression/api/ws-token
                     token:"<43 chars>"}}
 ```
 
-[`tools/ws-probe.mjs`](../tools/ws-probe.mjs) performs a real handshake and receives a snapshot:
+[`tools/ws-probe.mjs`](../../tools/ws-probe.mjs) performs a real handshake and receives a snapshot:
 
 ```json
 {
@@ -317,7 +317,7 @@ It was confirmed that the client bundle is served by the Host and contains `new 
 
 ### 9.3 Live push verification (after fixing the duplicate first frame)
 
-After a Host reload, [`tools/ws-probe.mjs`](../tools/ws-probe.mjs) sends `hello` only once and receives two frames:
+After a Host reload, [`tools/ws-probe.mjs`](../../tools/ws-probe.mjs) sends `hello` only once and receives two frames:
 
 ```text
 snapshot 1: elapsed 312ms, engine billion-context, requests 608, savedUsd 0.2449
@@ -361,11 +361,11 @@ tick and may be shorter than 1 second; this does not affect the conclusion that 
 
 | Content | Location |
 |---|---|
-| WebSocket handshake/frames/heartbeat/rate limiting | [`lib/ws.js`](../lib/ws.js) |
-| `/api/ws-token`, `registerUpgrade`, 1-second broadcast, dispose | [`lib/index.js`](../lib/index.js) |
-| Browser connection, reconnect, Markdown/PNG download | [`client.js`](../client.js) |
-| WebSocket unit tests | [`test/ws.test.js`](../test/ws.test.js) |
-| Route/client contract tests | [`test/plugin.test.js`](../test/plugin.test.js) |
-| Real handshake probe | [`tools/ws-probe.mjs`](../tools/ws-probe.mjs) |
+| WebSocket handshake/frames/heartbeat/rate limiting | [`lib/ws.js`](../../lib/ws.js) |
+| `/api/ws-token`, `registerUpgrade`, 1-second broadcast, dispose | [`lib/index.js`](../../lib/index.js) |
+| Browser connection, reconnect, Markdown/PNG download | [`client.js`](../../client.js) |
+| WebSocket unit tests | [`test/ws.test.js`](../../test/ws.test.js) |
+| Route/client contract tests | [`test/plugin.test.js`](../../test/plugin.test.js) |
+| Real handshake probe | [`tools/ws-probe.mjs`](../../tools/ws-probe.mjs) |
 | Runtime status and bili ledger | `http://127.0.0.1:51890/auto-context-compression/api/status` |
 | WebSocket token | `http://127.0.0.1:51890/auto-context-compression/api/ws-token` |

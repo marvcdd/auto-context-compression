@@ -1,6 +1,6 @@
-# 上传到 GitHub：完整命令清单
+﻿# 上传到 GitHub：完整命令清单
 
-> [English](./GITHUB.en.md) | 简体中文
+> [English](./en/GITHUB.en.md) | 简体中文
 
 本文假设你已经在本仓库根目录，且本机已安装 Git。命令中的 `<...>` 是占位符，请替换成自己的值。
 

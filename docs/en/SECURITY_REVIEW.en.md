@@ -1,4 +1,4 @@
-﻿English version of [SECURITY_REVIEW.md](./SECURITY_REVIEW.md).
+﻿English version of [SECURITY_REVIEW.md](../SECURITY_REVIEW.md).
 
 # Whole-project security review report
 
@@ -37,12 +37,12 @@ This project is a DSH Host plugin plus a native Web panel registered through `co
 
 Files reviewed:
 
-- [`lib/index.js`](../lib/index.js): Host plugin, HTTP routes, WebSocket mounting, bili reads, status file, client registration;
-- [`lib/policy.js`](../lib/policy.js): configuration validation and compaction planning;
-- [`lib/ws.js`](../lib/ws.js): WebSocket handshake, frame parsing, rate limiting, heartbeat, broadcast;
-- [`client.js`](../client.js): native React panel, connect/reconnect, Markdown/PNG download;
-- [`package.json`](../package.json), [`cordis.patch.yml`](../cordis.patch.yml), [`icon.svg`](../icon.svg), [`locale/`](../locale/) and the tests;
-- [`README.md`](../README.md), [`VERIFICATION.md`](./VERIFICATION.md), [`WEBSOCKET_REVIEW.md`](./WEBSOCKET_REVIEW.md).
+- [`lib/index.js`](../../lib/index.js): Host plugin, HTTP routes, WebSocket mounting, bili reads, status file, client registration;
+- [`lib/policy.js`](../../lib/policy.js): configuration validation and compaction planning;
+- [`lib/ws.js`](../../lib/ws.js): WebSocket handshake, frame parsing, rate limiting, heartbeat, broadcast;
+- [`client.js`](../../client.js): native React panel, connect/reconnect, Markdown/PNG download;
+- [`package.json`](../../package.json), [`cordis.patch.yml`](../../cordis.patch.yml), [`icon.svg`](../../icon.svg), [`locale/`](../../locale/) and the tests;
+- [`README.md`](../../README.md), [`VERIFICATION.md`](../VERIFICATION.md), [`WEBSOCKET_REVIEW.md`](../WEBSOCKET_REVIEW.md).
 
 Method:
 
@@ -122,7 +122,7 @@ What does not exist: arbitrary file read/write, command execution, model-request
 
 ### S-01 Unauthenticated WebSocket capability endpoint
 
-**Location**: the `/api/ws-token` branch in [`lib/index.js`](../lib/index.js); the Origin/token validation in [`lib/ws.js`](../lib/ws.js).
+**Location**: the `/api/ws-token` branch in [`lib/index.js`](../../lib/index.js); the Origin/token validation in [`lib/ws.js`](../../lib/ws.js).
 
 **Evidence**:
 
@@ -140,17 +140,17 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-02 Private `clientModules` API dependency
 
-**Location**: `clientDiagnostics()` / `ensureClientRegistration()` in [`lib/index.js`](../lib/index.js).
+**Location**: `clientDiagnostics()` / `ensureClientRegistration()` in [`lib/index.js`](../../lib/index.js).
 
 **Evidence**: registration uses the public graph query `ctx.get('clientModules')`, but the actual repair path accesses `sources`, `reconcilePackage`, `compose`, `notifyGraphChanged` and `rebuilt` through `ctx.reflect.get('clientModules')`. These are not stable public contracts.
 
-**Impact**: after a DSH upgrade, the boot graph may not include this plugin, entries may be duplicated, or `rebuilt` may throw. The worst case is that the panel does not appear or the page fails to load; because what is injected is this repository's own [`client.js`](../client.js), it does not directly create a new remote-code-execution surface. If DSH changes bundle-resolution semantics in the future, the public `dsh.client` scan/hot-update mechanism should be adopted first.
+**Impact**: after a DSH upgrade, the boot graph may not include this plugin, entries may be duplicated, or `rebuilt` may throw. The worst case is that the panel does not appear or the page fails to load; because what is injected is this repository's own [`client.js`](../../client.js), it does not directly create a new remote-code-execution surface. If DSH changes bundle-resolution semantics in the future, the public `dsh.client` scan/hot-update mechanism should be adopted first.
 
 **Disposition**: accepted and recorded; it runs only once at startup, and the public `debug=1` route no longer triggers writes. After a DSH upgrade, the regressions "`auto-context` exists in `conversation.view`" and "`clientPath` is non-empty" must be re-run.
 
 ### S-03 Missing session-level authorization
 
-**Location**: `findAgent()` and `buildLiveValue()` in [`lib/index.js`](../lib/index.js).
+**Location**: `findAgent()` and `buildLiveValue()` in [`lib/index.js`](../../lib/index.js).
 
 **Evidence**: `findAgent(sessionId)` matches `agent.id` or `agent.session.id` exactly; when there is no match it returns `agents[agents.length - 1]`. Both HTTP and WS can pass an arbitrary `sessionId`.
 
@@ -160,7 +160,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-04 No rate limit on the status endpoint
 
-**Location**: `handleStatusRequest()` → `refreshState()` → `tokenMeter.measure()` + `fetchBiliDetail()` in [`lib/index.js`](../lib/index.js).
+**Location**: `handleStatusRequest()` → `refreshState()` → `tokenMeter.measure()` + `fetchBiliDetail()` in [`lib/index.js`](../../lib/index.js).
 
 **Impact**: a same-origin page or a local script can GET at high frequency, triggering token measurements and bili requests and creating CPU/file-handle pressure. There is currently a 2-second bili cache, a 1200 ms timeout and an 8 MiB response cap, but no HTTP-layer token bucket.
 
@@ -168,7 +168,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-05 Unlimited connection count and handshake rate
 
-**Location**: `maxClients` and the handshake path in [`lib/ws.js`](../lib/ws.js).
+**Location**: `maxClients` and the handshake path in [`lib/ws.js`](../../lib/ws.js).
 
 **Impact**: at most 8 clients globally, with no per-IP limit; an attacker can reconnect rapidly to fill all 8 slots, or repeatedly trigger 101/401 handshakes to consume CPU. Per-connection limits of 50 messages/s and heartbeat/idle reaping are already in place.
 
@@ -176,7 +176,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-06 Loopback HTTP and token location
 
-**Location**: `new WebSocket(url, [protocol, token])` in [`client.js`](../client.js); the protocol selection in [`lib/ws.js`](../lib/ws.js).
+**Location**: `new WebSocket(url, [protocol, token])` in [`client.js`](../../client.js); the protocol selection in [`lib/ws.js`](../../lib/ws.js).
 
 **Impact**: local HTTP has no TLS; the token appears in the `Sec-WebSocket-Protocol` request header and may be recorded by enterprise proxies, browser extensions or debug logs. The token does not change during the plugin process lifetime, so the replay window is long.
 
@@ -192,7 +192,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-08 Local SSRF surface of biliOrigin
 
-**Location**: the `biliOrigin` validation in [`lib/policy.js`](../lib/policy.js); `fetchBiliDetail()` in [`lib/index.js`](../lib/index.js).
+**Location**: the `biliOrigin` validation in [`lib/policy.js`](../../lib/policy.js); `fetchBiliDetail()` in [`lib/index.js`](../../lib/index.js).
 
 **Evidence**: only `http/https` with a host of `127.0.0.1`, `localhost` or `::1` is allowed; the path is fixed to `/__bili/sessions/<encoded id>/detail`; there is a 2-second cache, a 1200 ms timeout and an 8 MiB response cap.
 
@@ -202,7 +202,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-09 Metadata in the status/config files
 
-**Location**: `writeStatus()` and `ensureDefaultConfigFile()` in [`lib/index.js`](../lib/index.js).
+**Location**: `writeStatus()` and `ensureDefaultConfigFile()` in [`lib/index.js`](../../lib/index.js).
 
 **Impact**: `status.json` contains session ids, absolute paths, the last error and the configuration; `config.json` contains biliOrigin and the exclusion list. They rely on the OS ACL of `$DSH_HOME`; there is no explicit chmod/encryption.
 
@@ -210,7 +210,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-10 Error-message leakage
 
-**Location**: the HTTP 500 and `biliError` in [`lib/index.js`](../lib/index.js); the snapshot error in [`lib/ws.js`](../lib/ws.js).
+**Location**: the HTTP 500 and `biliError` in [`lib/index.js`](../../lib/index.js); the snapshot error in [`lib/ws.js`](../../lib/ws.js).
 
 **Status**: HTTP 500 now returns a generic `internal error` and logs the details; the WS snapshot now returns `snapshot unavailable`; `biliError` still returns the local bili connection/HTTP error text.
 
@@ -220,7 +220,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-11 Frame parsing and backpressure boundaries
 
-**Location**: `FrameParser`, `pushSnapshot()` and `closeClient()` in [`lib/ws.js`](../lib/ws.js).
+**Location**: `FrameParser`, `pushSnapshot()` and `closeClient()` in [`lib/ws.js`](../../lib/ws.js).
 
 **Observations**:
 
@@ -234,7 +234,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-12 Incomplete CSRF protection
 
-**Location**: the `Sec-Fetch-Site` check in [`lib/index.js`](../lib/index.js).
+**Location**: the `Sec-Fetch-Site` check in [`lib/index.js`](../../lib/index.js).
 
 **Impact**: `Sec-Fetch-Site` is an optional browser header; `curl` and local scripts can omit it. Because the token endpoint itself has no authentication, the real defense is loopback + token; it must not be treated as CSRF authentication.
 
@@ -242,7 +242,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-13 Downloaded files contain metadata
 
-**Location**: `downloadReportFile()` / `renderReportImage()` in [`client.js`](../client.js).
+**Location**: `downloadReportFile()` / `renderReportImage()` in [`client.js`](../../client.js).
 
 **Impact**: the exported Markdown/PNG contain titles, session ids, paths, usage and the bili ledger; the file is saved by the user and never uploaded automatically.
 
@@ -250,7 +250,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-14 Missing connection auditing
 
-**Location**: [`lib/ws.js`](../lib/ws.js), [`lib/index.js`](../lib/index.js).
+**Location**: [`lib/ws.js`](../../lib/ws.js), [`lib/index.js`](../../lib/index.js).
 
 **Impact**: only mounting/warnings are logged; token issuance, connection origins and rejection-reason counts are not recorded, so incident traceability is limited.
 
@@ -258,7 +258,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-15 Non-atomic status writes
 
-**Location**: `writeStatus()` in [`lib/index.js`](../lib/index.js).
+**Location**: `writeStatus()` in [`lib/index.js`](../../lib/index.js).
 
 **Impact**: while `writeFile` runs, a reader may see truncated JSON; it is not a security vulnerability, but it affects external monitoring.
 
@@ -266,7 +266,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-16 Client bundle integrity
 
-**Location**: the `clientPath` registration in [`lib/index.js`](../lib/index.js), and [`client.js`](../client.js).
+**Location**: the `clientPath` registration in [`lib/index.js`](../../lib/index.js), and [`client.js`](../../client.js).
 
 **Impact**: the browser loads `client.js` from the same-origin Host; there is no SRI/signature, so the root of trust is the local package and the DSH bundle route. Anyone able to change the package can already execute code in the Host, so this is not an extra privilege escalation, but supply-chain auditing must cover the npm package/local link.
 
@@ -274,7 +274,7 @@ This route only checks `GET` and the optional `Sec-Fetch-Site`; there is no DSH 
 
 ### S-17 Client-triggered snapshot builds
 
-**Location**: `message.type === 'snapshot'` in [`lib/ws.js`](../lib/ws.js).
+**Location**: `message.type === 'snapshot'` in [`lib/ws.js`](../../lib/ws.js).
 
 **Impact**: a connected party can request an immediate build, triggering `refreshState()`/bili reads; it is limited by 50 messages/s and 8 clients. This is local resource consumption, not data privilege escalation.
 
@@ -347,13 +347,13 @@ Result: **40 passed, 0 failed**. Coverage:
 
 | Content | Location |
 | --- | --- |
-| Host routes, token, status file | [`lib/index.js`](../lib/index.js) |
-| bili ledger reader and field trimming | [`lib/bili.js`](../lib/bili.js) |
-| Client-half boot registration (DSH private API) | [`lib/client-registration.js`](../lib/client-registration.js) |
-| Configuration validation and compaction policy | [`lib/policy.js`](../lib/policy.js) |
-| WebSocket handshake/frames/rate limiting/heartbeat | [`lib/ws.js`](../lib/ws.js) |
-| Native panel, connection, download | [`client.js`](../client.js) |
+| Host routes, token, status file | [`lib/index.js`](../../lib/index.js) |
+| bili ledger reader and field trimming | [`lib/bili.js`](../../lib/bili.js) |
+| Client-half boot registration (DSH private API) | [`lib/client-registration.js`](../../lib/client-registration.js) |
+| Configuration validation and compaction policy | [`lib/policy.js`](../../lib/policy.js) |
+| WebSocket handshake/frames/rate limiting/heartbeat | [`lib/ws.js`](../../lib/ws.js) |
+| Native panel, connection, download | [`client.js`](../../client.js) |
 | Dedicated WebSocket report | [`WEBSOCKET_REVIEW.en.md`](./WEBSOCKET_REVIEW.en.md) |
 | Verification record | [`VERIFICATION.en.md`](./VERIFICATION.en.md) |
 | Git/GitHub upload commands | [`GITHUB.en.md`](./GITHUB.en.md) |
-| Real handshake probe | [`tools/ws-probe.mjs`](../tools/ws-probe.mjs) |
+| Real handshake probe | [`tools/ws-probe.mjs`](../../tools/ws-probe.mjs) |

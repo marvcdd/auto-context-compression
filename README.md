@@ -1,4 +1,4 @@
-# 自动上下文压缩（Auto Context Compression）
+﻿# 自动上下文压缩（Auto Context Compression）
 
 > [English](./README.en.md) | 简体中文
 
@@ -274,7 +274,7 @@ node --test test/*.test.js   # 40 passed
 英文版：
 
 - [README.en.md](README.en.md)
-- [GITHUB.en.md](./docs/GITHUB.en.md)
-- [SECURITY_REVIEW.en.md](./docs/SECURITY_REVIEW.en.md)
-- [WEBSOCKET_REVIEW.en.md](./docs/WEBSOCKET_REVIEW.en.md)
-- [VERIFICATION.en.md](./docs/VERIFICATION.en.md)
+- [GITHUB.en.md](./docs/en/GITHUB.en.md)
+- [SECURITY_REVIEW.en.md](./docs/en/SECURITY_REVIEW.en.md)
+- [WEBSOCKET_REVIEW.en.md](./docs/en/WEBSOCKET_REVIEW.en.md)
+- [VERIFICATION.en.md](./docs/en/VERIFICATION.en.md)

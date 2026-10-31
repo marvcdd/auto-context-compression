@@ -1,6 +1,6 @@
 ﻿# 全项目安全审查报告
 
-> [English](./SECURITY_REVIEW.en.md) | 简体中文
+> [English](./en/SECURITY_REVIEW.en.md) | 简体中文
 
 日期：2026-10-31  
 审查对象：`dsh-auto-context-compression@0.1.0` 全仓库  

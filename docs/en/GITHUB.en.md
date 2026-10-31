@@ -1,4 +1,4 @@
-English version of [GITHUB.md](./GITHUB.md).
+﻿English version of [GITHUB.md](../GITHUB.md).
 
 # Uploading to GitHub: complete command checklist
 
@@ -205,4 +205,4 @@ git log origin/main..HEAD --oneline
 git diff origin/main..HEAD --stat
 ```
 
-Project overview: [README.en.md](../README.en.md).
+Project overview: [README.en.md](../../README.en.md).
