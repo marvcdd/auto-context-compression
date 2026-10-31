@@ -1,5 +1,7 @@
 # 上传到 GitHub：完整命令清单
 
+> [English](./GITHUB.en.md) | 简体中文
+
 本文假设你已经在本仓库根目录，且本机已安装 Git。命令中的 `<...>` 是占位符，请替换成自己的值。
 
 ## 目录
@@ -22,7 +24,7 @@ git branch --show-current
 git remote -v
 ```
 
-本仓库已经执行过 `git init`，当前分支是 `master`，尚未提交，也还没有 remote。若你拿到的是干净目录、需要重新初始化，再执行：
+本仓库已经执行过 `git init`，当前分支是 `main`，已有提交，并已配置 `origin`。下面的“创建仓库 / 关联远程”步骤适用于全新仓库；如果你只是把本轮修改推上去，直接执行第 6 节。若你拿到的是干净目录、需要重新初始化，再执行：
 
 ```bash
 git init
@@ -69,6 +71,8 @@ git log --oneline --decorate -5
 - 如果发现误加入，执行 `git restore --staged <文件>`，不要直接 `git commit`。
 
 ## 3. 创建 GitHub 仓库
+
+如果 `git remote -v` 已经显示 `origin`（本仓库即是），跳过本节，直接看第 6 节。
 
 ### 方式 A：GitHub CLI（推荐）
 
@@ -139,10 +143,11 @@ https://github.com/<你的GitHub用户名>/<仓库名>
 
 ## 6. 后续更新
 
+本轮双语改动直接执行：
+
 ```bash
-git status
 git add .
-git commit -m "fix: describe the change"
+git commit -m "refactor: split host helpers; docs: add bilingual comments and English docs"
 git push
 ```
 

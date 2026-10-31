@@ -1,5 +1,7 @@
 # WebSocket 服务自审报告
 
+> [English](./WEBSOCKET_REVIEW.en.md) | 简体中文
+
 日期：2026-10-31  
 审核对象：[`lib/ws.js`](lib/ws.js) 及其 Host/Client 接入  
 运行环境：DSH Desktop，Web GUI `http://127.0.0.1:51890`，Windows，Node.js 24  

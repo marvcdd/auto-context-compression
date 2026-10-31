@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Auto Context Compression">
+  <!-- 自动上下文压缩图标；Automatic context compression icon. -->
   <defs>
     <linearGradient id="g" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#4f8cff"/>

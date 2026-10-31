@@ -1,5 +1,7 @@
 # 验证记录（2026-10-31）
 
+> [English](./VERIFICATION.en.md) | 简体中文
+
 ## 1. 构建与静态检查
 
 ```text

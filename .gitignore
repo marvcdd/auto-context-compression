@@ -1,4 +1,5 @@
-# Local runtime / editor artifacts
+# 本地运行时/编辑器产物。Local runtime / editor artifacts.
+# 依赖与构建产物。Dependencies and build output.
 node_modules/
 coverage/
 *.log

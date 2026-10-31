@@ -1,3 +1,22 @@
+/**
+ * 自动上下文压缩 Web 面板（浏览器端模块）。
+ * Auto context compression Web panel (browser-side module).
+ *
+ * 中文：
+ * 通过 DSH `conversation.view` 注册“压缩”页签；面板用 WebSocket 接收 Host 推送，
+ * 展示上下文压力、prompt-cache 命中率和 bili/DSH 压缩收益，并支持下载 Markdown
+ * 报告与 PNG 图片。渲染使用 React text node 和 DSH 主题变量，不使用 iframe 或
+ * innerHTML；下载完全在浏览器本地生成。
+ *
+ * English:
+ * Registers the "Compression" tab through DSH `conversation.view`. The panel
+ * receives Host pushes over WebSocket, shows context pressure, prompt-cache
+ * hit/miss rates, and bili/DSH compression savings, and downloads a Markdown
+ * report or a PNG image. It renders through React text nodes and DSH theme
+ * tokens, uses no iframe or innerHTML, and generates downloads locally.
+ *
+ * 本文件注释采用中英双语。Comments in this file are bilingual.
+ */
 window.__ModuleLoader__.load({
   id: 'dsh-auto-context-compression',
   factory(require) {
@@ -8,6 +27,8 @@ window.__ModuleLoader__.load({
     const WS_RECONNECT_MAX_MS = 10000
     const PRICE = { input: 0.15, cacheRead: 0.003, cacheWrite: 0.15, output: 0.6 }
 
+    // 中文字典；面板文案全部走 locale，切换语言无需重载模块。
+    // Chinese dictionary; all panel copy flows through locale without a reload.
     const zh = {
       tab: '压缩',
       title: '自动上下文压缩',
@@ -67,6 +88,8 @@ window.__ModuleLoader__.load({
       errorPrefix: '状态接口错误：{x}',
     }
 
+    // 英文字典，与 zh 的 key 必须保持一致。
+    // English dictionary; keys must stay in sync with `zh`.
     const en = {
       tab: 'Compression',
       title: 'Automatic context compression',
@@ -126,6 +149,8 @@ window.__ModuleLoader__.load({
       errorPrefix: 'Status endpoint error: {x}',
     }
 
+    // 面板样式；颜色全部取 DSH 主题变量，并提供安全回退值。
+    // Panel styles; all colors use DSH theme tokens with safe fallbacks.
     const CSS = `
       .dsh-acc-root {
         --acc-bg: var(--dsw-alias-bg-base, #0b0e14);
@@ -369,10 +394,14 @@ window.__ModuleLoader__.load({
       }
     `
 
+    // 简单的 `{name}` 插值，避免引入模板依赖。
+    // Tiny `{name}` interpolation helper; no template dependency.
     function fill(template, values) {
       return String(template).replace(/\{(\w+)\}/g, (_, key) => (values[key] ?? ''))
     }
 
+    // 把 token 数压缩成 166.0M / 525K 这类面板友好格式。
+    // Compact token counts into panel-friendly 166.0M / 525K strings.
     function compact(value) {
       const number = Number(value)
       if (!Number.isFinite(number)) return '—'
@@ -383,18 +412,24 @@ window.__ModuleLoader__.load({
       return String(Math.round(number))
     }
 
+    // 把 0..1 比例格式化为百分比。
+    // Format a 0..1 ratio as a percentage.
     function percent(value, digits = 1) {
       const number = Number(value)
       if (!Number.isFinite(number)) return '—'
       return `${(number * 100).toFixed(digits)}%`
     }
 
+    // 格式化请求数等整数值。
+    // Format integer counters such as request counts.
     function count(value) {
       const number = Number(value)
       if (!Number.isFinite(number)) return '—'
       return Math.round(number).toLocaleString('en-US')
     }
 
+    // 格式化美元估算值；未知值显示长破折号。
+    // Format an estimated USD amount; unknown values render as an em dash.
     function money(value) {
       if (value === null || value === undefined) return '—'
       const number = Number(value)
@@ -402,6 +437,8 @@ window.__ModuleLoader__.load({
       return `$${number.toFixed(number >= 1 ? 2 : 4)}`
     }
 
+    // 把 ISO 时间格式化为 MM-DD HH:mm:ss。
+    // Format an ISO timestamp as MM-DD HH:mm:ss.
     function clock(iso) {
       if (typeof iso !== 'string' || iso.length === 0) return '—'
       const date = new Date(iso)
@@ -409,6 +446,8 @@ window.__ModuleLoader__.load({
       return date.toLocaleTimeString('zh-CN', { hour12: false })
     }
 
+    // 复制按钮：优先 Clipboard API，失败时回退到隐藏 textarea。
+    // Copy button: Clipboard API first, hidden-textarea fallback.
     function CopyButton({ text }) {
       const [copied, setCopied] = React.useState(false)
       React.useEffect(() => {
@@ -430,7 +469,7 @@ window.__ModuleLoader__.load({
             document.execCommand('copy')
             area.remove()
           } catch {
-            /* clipboard may be unavailable in a non-secure embed */
+            /* 非安全嵌入中 clipboard 可能不可用。Clipboard may be unavailable in a non-secure embed. */
           }
         }
         setCopied(true)
@@ -439,6 +478,8 @@ window.__ModuleLoader__.load({
         copied ? '已复制' : '复制')
     }
 
+    // 基本信息行；长路径可换行，可选复制按钮。
+    // Basic-info row; long paths wrap, with an optional copy button.
     function InfoRow({ label, value, mono = false, muted = false, copy = null }) {
       return h('div', { className: 'dsh-acc-row' },
         h('div', { className: 'dsh-acc-label' }, label),
@@ -447,6 +488,8 @@ window.__ModuleLoader__.load({
           copy === null ? null : h(CopyButton, { text: copy })))
     }
 
+    // 指标卡片；tone 控制绿色/红色等强调色。
+    // Metric card; `tone` selects green/red emphasis.
     function Card({ label, value, sub, tone = '' }) {
       return h('div', { className: 'dsh-acc-card' },
         h('div', { className: 'dsh-acc-card-label' }, label),
@@ -454,6 +497,14 @@ window.__ModuleLoader__.load({
         h('div', { className: 'dsh-acc-card-sub' }, sub))
     }
 
+    /**
+     * 实时状态 Hook：先取同源短期 token，再建立带固定子协议的 WebSocket。
+     * 连接成功后发送 hello；收到 snapshot 即更新；异常按 500ms→10s 退避重连，
+     * 组件卸载或 epoch 变化时清理 socket/定时器。
+     * Live-status Hook: fetch the short-lived same-origin token, open a WebSocket
+     * with the fixed subprotocol, send `hello`, apply `snapshot` messages, and
+     * reconnect with 500ms→10s backoff. Cleanup runs on unmount/epoch change.
+     */
     function useLiveStatus(sessionId, epoch) {
       const [state, setState] = React.useState({
         data: null,
@@ -548,7 +599,7 @@ window.__ModuleLoader__.load({
             try {
               socket.close()
             } catch {
-              /* already closed */
+              /* 已经关闭。Already closed. */
             }
           }
         }
@@ -556,6 +607,8 @@ window.__ModuleLoader__.load({
       return state
     }
 
+    // 通过临时 object URL 触发本地下载。
+    // Trigger a local download through a temporary object URL.
     function downloadBlob(filename, blob) {
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
@@ -568,10 +621,14 @@ window.__ModuleLoader__.load({
       setTimeout(() => URL.revokeObjectURL(url), 1500)
     }
 
+    // 生成下载文件名使用的时间戳。
+    // Timestamp used in downloaded file names.
     function stamp() {
       return new Date().toISOString().replace(/[:.]/g, '-')
     }
 
+    // 统一提取报告/图片共用的值；bili 优先，DSH 作为回退。
+    // Normalize values shared by Markdown/PNG; bili first, DSH as fallback.
     function reportValues(data) {
       const session = data?.session ?? {}
       const bili = data?.bili ?? {}
@@ -608,6 +665,8 @@ window.__ModuleLoader__.load({
       }
     }
 
+    // 生成可离线保存的 Markdown 报告。
+    // Build a self-contained Markdown report for local download.
     function reportMarkdown(data) {
       const value = reportValues(data)
       const session = data?.session ?? {}
@@ -663,6 +722,8 @@ window.__ModuleLoader__.load({
       ].join('\n')
     }
 
+    // 为 PNG 渲染准备纯值模型，避免绘图代码重复判断空值。
+    // Prepare a plain value model for PNG rendering so draw code stays null-safe.
     function imageModel(data) {
       const value = reportValues(data)
       const session = data?.session ?? {}
@@ -692,6 +753,8 @@ window.__ModuleLoader__.load({
       }
     }
 
+    // 在 Canvas 上绘制圆角矩形路径。
+    // Draw a rounded-rectangle path on a Canvas context.
     function drawRounded(g, x, y, width, height, radius, fill) {
       const r = Math.min(radius, width / 2, height / 2)
       g.beginPath()
@@ -705,6 +768,8 @@ window.__ModuleLoader__.load({
       g.fill()
     }
 
+    // 按最大宽度截断文本，避免 PNG 卡片溢出。
+    // Truncate text to a max width so PNG cards cannot overflow.
     function fitText(g, text, maxWidth) {
       const value = String(text ?? '—')
       if (g.measureText(value).width <= maxWidth) return value
@@ -713,6 +778,8 @@ window.__ModuleLoader__.load({
       return `${value.slice(0, end)}…`
     }
 
+    // 渲染 1200×900 @2x 深色报告图；所有数据只留在本地。
+    // Render a 1200×900 @2x dark report image; all data stays local.
     function renderReportImage(data) {
       return new Promise((resolve, reject) => {
         const model = imageModel(data)
@@ -783,17 +850,23 @@ window.__ModuleLoader__.load({
       })
     }
 
+    // 生成并下载 Markdown 报告。
+    // Generate and download the Markdown report.
     async function downloadReportFile(data) {
       downloadBlob(`auto-context-compression-${stamp()}.md`, new Blob([reportMarkdown(data)], {
         type: 'text/markdown;charset=utf-8',
       }))
     }
 
+    // 生成并下载 PNG 报告。
+    // Generate and download the PNG report.
     async function downloadReportImage(data) {
       const blob = await renderReportImage(data)
       downloadBlob(`auto-context-compression-${stamp()}.png`, blob)
     }
 
+    // 顶部栏：标题、实时连接状态、刷新/重连、报告与图片下载。
+    // Header: title, live status, reconnect/refresh, report and image downloads.
     function Header({ data, error, connected, onRefresh, onDownloadReport, onDownloadImage, downloading }) {
       const session = data?.session ?? {}
       const bili = data?.bili ?? null
@@ -839,6 +912,8 @@ window.__ModuleLoader__.load({
           }, '重连')))
     }
 
+    // 主面板：基本信息 + 用量卡片 + 实时状态/错误横幅。
+    // Main panel: basic info, usage cards, and live/error banners.
     function Panel(props) {
       const sessionId = typeof props?.sessionId === 'string' && props.sessionId.length > 0 ? props.sessionId : ''
       const [epoch, setEpoch] = React.useState(0)
@@ -1063,6 +1138,8 @@ window.__ModuleLoader__.load({
               h('div', { className: 'dsh-acc-note' }, '金额按 DeepSeek 参考单价估算（输入 $0.15 / 缓存读 $0.003 / 输出 $0.60 每百万 token），仅用于判断压缩是否划算，不是账单。压缩回本未计全量重放成本。当前 profile 的线上压缩由 billion-context 账本提供；本插件的主动策略在原生 compaction 服务可用时自动接管。'))))
     }
 
+    // 注册 locale/CSS 与 `conversation.view` 页签；cleanup 由 ctx.effect 负责。
+    // Register locale/CSS and the `conversation.view` tab; ctx.effect owns cleanup.
     function apply(ctx) {
       ctx.effect(() => {
         const style = document.createElement('style')

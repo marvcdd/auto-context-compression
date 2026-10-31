@@ -1,5 +1,13 @@
+# 自动上下文压缩：为每个 agent 增加主动压缩策略。
 # Auto context compression: proactive compaction for every agent.
 #
+# 中文：
+# 原生 compaction-basic 可用时，它只会在“上下文窗口 80%”与“输出预留 + headroom
+# 之后剩余容量”两者较高者处触发。本行在同一个持久化压缩引擎之上增加可配置的
+# 更早策略、工具结果裁剪和 /autocompact 命令。若 profile 由 billion-context
+# 接管 wire-level 压缩，本插件的主动策略保持休眠，Web 面板改为读取 bili 账本。
+#
+# English:
 # When native compaction-basic is available, it only fires at the higher of 80%
 # of the context window and the capacity left after the output reservation plus
 # headroom. This row adds a configurable, earlier policy on top of the same
@@ -24,6 +32,8 @@
         configFile: true
         logLevel: info
         excludeSessionIds: []
+        # 可选的 billion-context 本地统计只读集成。
+        # 空字符串关闭；只接受 loopback origin。
         # Optional read-only integration with billion-context's local stats
         # server. Empty string disables it; only loopback origins are accepted.
         biliOrigin: http://127.0.0.1:18787

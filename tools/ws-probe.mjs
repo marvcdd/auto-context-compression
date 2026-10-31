@@ -1,10 +1,18 @@
 /**
+ * 自动上下文压缩面板的最小 loopback WebSocket 探针。
  * Minimal loopback WebSocket probe for the auto-context-compression panel.
  *
+ * 中文：
+ * 用法：
+ *   node tools/ws-probe.mjs
+ *   DSH_GUI_ORIGIN=http://127.0.0.1:51890 node tools/ws-probe.mjs
+ * 从同源获取短期 capability，完成 RFC 6455 握手，发送一次 hello，
+ * 收到两帧 snapshot 后退出。无 npm 依赖；只允许连接 loopback DSH。
+ *
+ * English:
  * Usage:
  *   node tools/ws-probe.mjs
  *   DSH_GUI_ORIGIN=http://127.0.0.1:51890 node tools/ws-probe.mjs
- *
  * It fetches the short-lived capability from the same origin, performs the
  * RFC 6455 handshake, sends one hello, and exits after two snapshots.
  * Requires no npm dependencies; run only against a DSH instance on loopback.
@@ -34,6 +42,8 @@ let upgraded = false
 let snapshots = 0
 const startedAt = Date.now()
 
+// 构造带随机 mask 的客户端文本帧。
+// Build a masked client text frame with a random mask.
 function maskedFrame(text) {
   const payload = Buffer.from(text, 'utf8')
   const mask = randomBytes(4)
@@ -53,6 +63,8 @@ function maskedFrame(text) {
   return Buffer.concat([header, mask, body])
 }
 
+// 解析服务端未掩码帧；响应 ping，记录 snapshot，收到两帧后退出。
+// Parse unmasked server frames; answer pings, print snapshots, exit after two.
 function consumeFrames() {
   while (buffer.length >= 2) {
     const first = buffer[0]
@@ -104,6 +116,8 @@ function consumeFrames() {
   }
 }
 
+// 升级请求：固定路径、loopback Origin、协议 + 每进程 token。
+// Upgrade request: fixed path, loopback Origin, protocol + per-process token.
 socket.on('connect', () => {
   socket.write(
     `GET ${capability.path} HTTP/1.1\r\n`
@@ -118,6 +132,8 @@ socket.on('connect', () => {
   )
 })
 
+// 先完成 101 握手，再发送唯一的 hello；之后完全由服务端推送。
+// Complete the 101 handshake, send one hello, then rely on server pushes only.
 socket.on('data', (chunk) => {
   buffer = Buffer.concat([buffer, chunk])
   if (!upgraded) {

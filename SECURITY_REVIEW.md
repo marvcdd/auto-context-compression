@@ -1,5 +1,7 @@
 # 全项目安全审查报告
 
+> [English](./SECURITY_REVIEW.en.md) | 简体中文
+
 日期：2026-10-31  
 审查对象：`dsh-auto-context-compression@0.1.0` 全仓库  
 审查方式：源码逐行审查、静态扫描、单元测试、本机 loopback 真实握手与推送验证  
@@ -306,6 +308,8 @@ GET /auto-context-compression/api/ws-token
 node --check lib/index.js
 node --check lib/policy.js
 node --check lib/ws.js
+node --check lib/bili.js
+node --check lib/client-registration.js
 node --check client.js
 node --check tools/ws-probe.mjs
 node --test test/*.test.js
@@ -343,7 +347,9 @@ node --test test/*.test.js
 
 | 内容 | 位置 |
 | --- | --- |
-| Host 路由、token、bili、状态文件、客户端注册 | [`lib/index.js`](lib/index.js) |
+| Host 路由、token、状态文件 | [`lib/index.js`](lib/index.js) |
+| bili 账本读取与字段裁剪 | [`lib/bili.js`](lib/bili.js) |
+| 客户端半区启动注册（DSH 私有 API） | [`lib/client-registration.js`](lib/client-registration.js) |
 | 配置校验与压缩策略 | [`lib/policy.js`](lib/policy.js) |
 | WebSocket 握手/帧/限流/心跳 | [`lib/ws.js`](lib/ws.js) |
 | 原生面板、连接、下载 | [`client.js`](client.js) |

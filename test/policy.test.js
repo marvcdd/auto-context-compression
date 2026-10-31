@@ -1,3 +1,11 @@
+/**
+ * 纯策略/配置单元测试。
+ * Pure policy and configuration unit tests.
+ *
+ * 中文：不启动 Harness，只验证 turn 分段、安全区间、保留尾部、缓存/压缩统计和配置校验。
+ * English: No Harness bootstrap; validates turn segmentation, safe spans,
+ * retention tail, cache/compaction summaries, and config validation.
+ */
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
@@ -12,6 +20,8 @@ import {
 } from '../lib/policy.js'
 
 /**
+ * 构造连续 seq 的合成会话日志；surface 节点由 system head、每个 turn 的
+ * user message 和该 step 列出的 surface 类型组成。
  * Build a synthetic session log with contiguous sequence numbers.
  * Surface nodes are the system head, each turn's user message, and each step's
  * listed surface message types.

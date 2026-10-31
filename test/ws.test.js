@@ -1,3 +1,11 @@
+/**
+ * WebSocket 握手、帧解析和鉴权测试。
+ * WebSocket handshake, frame parsing, and authentication tests.
+ *
+ * 中文：覆盖 masked 文本帧、未掩码拒绝、分片/上限、Origin/token 校验和 101 握手。
+ * English: Covers masked text frames, unmasked rejection, fragmentation/limits,
+ * Origin/token validation, and the 101 handshake.
+ */
 import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
 import test from 'node:test'
@@ -10,6 +18,8 @@ import {
   tokenMatches,
 } from '../lib/ws.js'
 
+// 构造带固定 mask 的客户端帧，便于逐字节断言。
+// Build a client frame with a fixed mask for byte-level assertions.
 function maskedFrame(opcode, payload, fin = true) {
   const data = Buffer.isBuffer(payload) ? payload : Buffer.from(payload, 'utf8')
   const mask = Buffer.from([0x11, 0x22, 0x33, 0x44])

@@ -1,3 +1,13 @@
+/**
+ * Host 插件路由、状态与客户端契约测试。
+ * Host plugin route, status, and client-contract tests.
+ *
+ * 中文：用假的 Host/agent/session 驱动真实插件，覆盖只读 GET 不压缩、
+ * ws-token、升级注册、跨站拒绝、状态文件与热重载失败隔离。
+ * English: Drives the real plugin with fake Host/agent/session objects and
+ * covers read-only GET, ws-token, upgrade registration, cross-site rejection,
+ * status file, and isolated config hot-reload failures.
+ */
 import assert from 'node:assert/strict'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
@@ -8,7 +18,7 @@ import { CONFIG_DEFAULTS, resolveConfig } from '../lib/policy.js'
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-/** Synthetic three-turn session: two completed turns and one open turn. */
+/** 合成的三 turn 会话：两个已完成 turn 和一个开放 turn。Synthetic three-turn session: two completed turns and one open turn. */
 function makeLog() {
   let seq = 0
   const events = []
@@ -342,6 +352,7 @@ test('config.json changes the trigger on the next step without a plugin reload',
     const { agent, preStep, command, calls, runtime } = setup({ totalTokens: 600, configFile: true })
     assert.equal(calls.length, 0)
 
+    // 60% 压力超过初始 50% 触发线。
     // 60% pressure exceeds the initial 50% trigger.
     await preStep({ agent, signal: signal(), turn: 1, step: 1, messages: [] }, next)
     assert.equal(calls.length, 1)
@@ -351,6 +362,7 @@ test('config.json changes the trigger on the next step without a plugin reload',
     const file = JSON.parse(readFileSync(configPath, 'utf8'))
     assert.equal(file.triggerRatio, 0.5)
 
+    // 把触发线抬高到 90%：同样的 60% 压力不得再触发压缩。
     // Raise the trigger to 90%: the same 60% pressure must no longer compact.
     file.triggerRatio = 0.9
     writeFileSync(configPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8')
@@ -359,6 +371,7 @@ test('config.json changes the trigger on the next step without a plugin reload',
     await preStep({ agent, signal: signal(), turn: 1, step: 2, messages: [] }, next)
     assert.equal(calls.length, 1)
 
+    // 再降到 40%：下一次 pre-step 应读取到文件变化。
     // Lower it to 40%: the file change is picked up on the next step.
     file.triggerRatio = 0.4
     writeFileSync(configPath, `${JSON.stringify(file, null, 2)}\n`, 'utf8')
@@ -367,6 +380,7 @@ test('config.json changes the trigger on the next step without a plugin reload',
     await preStep({ agent, signal: signal(), turn: 1, step: 3, messages: [] }, next)
     assert.equal(calls.length, 2)
 
+    // 畸形文件被忽略并写入状态，而不是抛出异常。
     // A malformed file is ignored and surfaced in status, not thrown.
     writeFileSync(configPath, '{"triggerRatio": "bad"}\n', 'utf8')
     await sleep(1100)

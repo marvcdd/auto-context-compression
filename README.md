@@ -1,5 +1,7 @@
 # 自动上下文压缩（Auto Context Compression）
 
+> [English](./README.en.md) | 简体中文
+
 面向 DeepSeek Harness 的插件：在上下文窗口被填满之前主动压缩长会话，并在 Web UI 的 **压缩** 标签页里展示上下文压力、缓存命中、压缩收益与花费估算。
 
 在没有其他压缩网关的 profile 中，DeepSeek Harness 自带的 `compaction-basic` 会在压力达到约 **80%**（并受输出预留与 headroom 上限约束）时自动压缩。本插件把同一个持久化压缩引擎的触发点提前到可配置的 **50%**，并在摘要之前先做确定性的工具结果裁剪，让长会话更早、更平滑地回落到目标水位。
@@ -7,6 +9,15 @@
 插件只使用 Harness 已有的公开能力：`agent/pre-step`、`ctx.tokenMeter`、`ctx.toolResultPruner` 与 `ctx.compaction.compactRegion`。它不新增 Session 事件类型，也不改写模型请求，因此 fork / resume / replay / `/compact` 都保持兼容。
 
 > **本机 profile 的实际情况**：当前安装了 `billion-context`，它会在 wire 层接管自动压缩，并主动禁用原生 `compaction-basic` / `command-compact`。此时本插件的**主动压缩策略保持待命**，避免与 bili 的 checkpoint 冲突；Web 面板会改用 bili 的账本展示真实收益。若卸载 bili 或恢复原生 compaction 服务，主动策略会自动恢复。详见 [与 billion-context 的关系](#与-billion-context-的关系)。
+
+## 代码结构
+
+- [`lib/index.js`](lib/index.js)：Host 入口、pre-step 策略、状态与 HTTP/WS 路由；
+- [`lib/policy.js`](lib/policy.js)：压缩区间选择与配置校验（核心，保持单文件）；
+- [`lib/ws.js`](lib/ws.js)：WebSocket 握手、帧解析、限流与心跳（协议核心，保持单文件）；
+- [`lib/bili.js`](lib/bili.js)：billion-context 账本读取、响应体上限与字段裁剪；
+- [`lib/client-registration.js`](lib/client-registration.js)：客户端半区的启动注册与只读诊断（隔离 DSH 私有 API）；
+- [`client.js`](client.js)：原生 React 面板、实时连接、报告/图片下载。DSH 的 `dsh.client` 只加载一个 bundle，因此保持单文件，不引入构建步骤。
 
 ## 工作方式
 
@@ -208,6 +219,8 @@ cd <仓库根目录>
 node --check lib/index.js
 node --check lib/policy.js
 node --check lib/ws.js
+node --check lib/bili.js
+node --check lib/client-registration.js
 node --check client.js
 node --test test/*.test.js   # 40 passed
 ```
@@ -255,3 +268,11 @@ node --test test/*.test.js   # 40 passed
 - [SECURITY_REVIEW.md](SECURITY_REVIEW.md)：全项目安全审查报告；
 - [WEBSOCKET_REVIEW.md](WEBSOCKET_REVIEW.md)：WebSocket 专项自审；
 - [VERIFICATION.md](VERIFICATION.md)：测试与真实验证记录。
+
+英文版：
+
+- [README.en.md](README.en.md)
+- [GITHUB.en.md](GITHUB.en.md)
+- [SECURITY_REVIEW.en.md](SECURITY_REVIEW.en.md)
+- [WEBSOCKET_REVIEW.en.md](WEBSOCKET_REVIEW.en.md)
+- [VERIFICATION.en.md](VERIFICATION.en.md)
