@@ -1,0 +1,10 @@
+# Local runtime / editor artifacts
+node_modules/
+coverage/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

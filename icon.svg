@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Auto Context Compression">
+  <defs>
+    <linearGradient id="g" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4f8cff"/>
+      <stop offset="1" stop-color="#8a5cff"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#g)"/>
+  <g fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 26a15 15 0 0 1 25.6-9.6"/>
+    <path d="M44 12v7.5h-7.5"/>
+    <path d="M46 38a15 15 0 0 1-25.6 9.6"/>
+    <path d="M20 52v-7.5h7.5"/>
+    <path d="M25 32h14"/>
+    <path d="M28 27l-5 5 5 5"/>
+    <path d="M36 27l5 5-5 5"/>
+  </g>
+</svg>

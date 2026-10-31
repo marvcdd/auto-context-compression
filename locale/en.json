@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Auto Context Compression",
+    "description": "Proactively compresses long sessions before the context window fills, with a native Web panel for context pressure, cache hit rate, compaction savings, and /autocompact."
+  }
+}

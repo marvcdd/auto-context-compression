@@ -1,0 +1,29 @@
+# Auto context compression: proactive compaction for every agent.
+#
+# When native compaction-basic is available, it only fires at the higher of 80%
+# of the context window and the capacity left after the output reservation plus
+# headroom. This row adds a configurable, earlier policy on top of the same
+# durable compaction engine, plus tool-result pruning and a /autocompact command.
+# In a profile where billion-context owns wire-level compaction, the active
+# policy stays dormant and the Web panel reads bili's ledger instead.
+- insert:
+    - id: auto-context-compression
+      name: dsh-auto-context-compression
+      config:
+        enabled: true
+        triggerRatio: 0.5
+        targetRatio: 0.35
+        keepRecentTurns: 2
+        keepRecentTokens: 12000
+        minCompactionTokens: 8000
+        minGrowthTokens: 8000
+        cooldownMs: 60000
+        pruneToolResults: true
+        fallbackContextWindow: 0
+        statusFile: true
+        configFile: true
+        logLevel: info
+        excludeSessionIds: []
+        # Optional read-only integration with billion-context's local stats
+        # server. Empty string disables it; only loopback origins are accepted.
+        biliOrigin: http://127.0.0.1:18787
