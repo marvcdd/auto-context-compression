@@ -1,4 +1,4 @@
-English version of [VERIFICATION.md](./VERIFICATION.md).
+﻿English version of [VERIFICATION.md](./VERIFICATION.md).
 
 # Verification record (2026-10-31)
 

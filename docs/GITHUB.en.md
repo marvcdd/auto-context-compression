@@ -143,11 +143,11 @@ Confirm that the repository contains `README.md`, `SECURITY_REVIEW.md`, `WEBSOCK
 
 ## 6. Subsequent updates
 
-For this round of bilingual changes, run:
+For this round of changes, run:
 
 ```bash
-git add .
-git commit -m "refactor: split host helpers; docs: add bilingual comments and English docs"
+git add -A
+git commit -m "refactor: split host helpers; docs: add bilingual docs and group docs/"
 git push
 ```
 
@@ -205,4 +205,4 @@ git log origin/main..HEAD --oneline
 git diff origin/main..HEAD --stat
 ```
 
-Project overview: [README.en.md](./README.en.md).
+Project overview: [README.en.md](../README.en.md).

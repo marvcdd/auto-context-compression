@@ -143,11 +143,11 @@ https://github.com/<你的GitHub用户名>/<仓库名>
 
 ## 6. 后续更新
 
-本轮双语改动直接执行：
+本轮改动直接执行：
 
 ```bash
-git add .
-git commit -m "refactor: split host helpers; docs: add bilingual comments and English docs"
+git add -A
+git commit -m "refactor: split host helpers; docs: add bilingual docs and group docs/"
 git push
 ```
 

@@ -210,7 +210,7 @@ $DSH_HOME/auto-context-compression/status.json
 - **不重复造摘要**：摘要由 `compaction-basic` 的持久化引擎执行；本插件只决定何时、压缩哪一段。原生服务不可用时（例如被 bili 接管）主动策略直接待命，不会自行生成摘要。
 - **单轮次保护**：一个从未出现 `step/end` 的单步轮次没有安全切点，本插件会跳过，交给内置策略。
 - **WebSocket 只读**：只支持 `hello` / `snapshot` / `ping`，不执行客户端指令，不读写客户端指定路径；Origin 必须是同源 loopback，另需进程级 token。
-- **本机信任边界**：`/api/ws-token` 没有用户登录态；本机任意进程可取 token。面板仅适合单用户 loopback，不要把 GUI 端口暴露到局域网/公网。详见 [WEBSOCKET_REVIEW.md](./WEBSOCKET_REVIEW.md)。
+- **本机信任边界**：`/api/ws-token` 没有用户登录态；本机任意进程可取 token。面板仅适合单用户 loopback，不要把 GUI 端口暴露到局域网/公网。详见 [WEBSOCKET_REVIEW.md](./docs/WEBSOCKET_REVIEW.md)。
 
 ## 验证
 
@@ -247,7 +247,7 @@ node --test test/*.test.js   # 40 passed
 
 安装后的真实验证可查看 `status.json`：`sessions[]` 中应出现当前会话，并随每次模型请求更新 `tokens` 与 `lastSkipReason`。在原生 compaction 可用的 profile 中，压力超过触发线时 `compactions` 与 `tokensSaved` 会增加，日志中出现 `auto-context-compression: compacted ...`；当前 bili 接管的 profile 中主动策略会显示 `no-compaction-service`，这是预期行为。
 
-2026-10-31 已用一次性子代理做过真实压缩验证（当时原生 compaction 仍可用）：临时阈值 2%、排除交互会话后，子代理会话产生了完整的 `compaction/start → compaction/summary → user/message(replace) → compaction/end` 事务，节省 14,371 tokens，且子代理仍正常完成回答。随后已恢复 50% / 35% 的生产配置。证据见 [VERIFICATION.md](./VERIFICATION.md)。
+2026-10-31 已用一次性子代理做过真实压缩验证（当时原生 compaction 仍可用）：临时阈值 2%、排除交互会话后，子代理会话产生了完整的 `compaction/start → compaction/summary → user/message(replace) → compaction/end` 事务，节省 14,371 tokens，且子代理仍正常完成回答。随后已恢复 50% / 35% 的生产配置。证据见 [VERIFICATION.md](./docs/VERIFICATION.md)。
 
 ## 已知限制
 
@@ -264,15 +264,17 @@ node --test test/*.test.js   # 40 passed
 
 ## 文档
 
-- [GITHUB.md](GITHUB.md)：上传到 GitHub 的完整命令清单；
-- [SECURITY_REVIEW.md](SECURITY_REVIEW.md)：全项目安全审查报告；
-- [WEBSOCKET_REVIEW.md](WEBSOCKET_REVIEW.md)：WebSocket 专项自审；
-- [VERIFICATION.md](VERIFICATION.md)：测试与真实验证记录。
+文档统一放在 [`docs/`](./docs/README.md)，根目录只保留中英文 README。
+
+- [GITHUB.md](./docs/GITHUB.md)：上传到 GitHub 的完整命令清单；
+- [SECURITY_REVIEW.md](./docs/SECURITY_REVIEW.md)：全项目安全审查报告；
+- [WEBSOCKET_REVIEW.md](./docs/WEBSOCKET_REVIEW.md)：WebSocket 专项自审；
+- [VERIFICATION.md](./docs/VERIFICATION.md)：测试与真实验证记录。
 
 英文版：
 
 - [README.en.md](README.en.md)
-- [GITHUB.en.md](GITHUB.en.md)
-- [SECURITY_REVIEW.en.md](SECURITY_REVIEW.en.md)
-- [WEBSOCKET_REVIEW.en.md](WEBSOCKET_REVIEW.en.md)
-- [VERIFICATION.en.md](VERIFICATION.en.md)
+- [GITHUB.en.md](./docs/GITHUB.en.md)
+- [SECURITY_REVIEW.en.md](./docs/SECURITY_REVIEW.en.md)
+- [WEBSOCKET_REVIEW.en.md](./docs/WEBSOCKET_REVIEW.en.md)
+- [VERIFICATION.en.md](./docs/VERIFICATION.en.md)

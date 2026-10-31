@@ -210,7 +210,7 @@ To let this plugin's own proactive policy take over compaction, disable billion-
 - **No duplicate summarization**: summaries are produced by the persistent engine of `compaction-basic`; this plugin only decides when and which range to compact. When the native service is unavailable (for example taken over by bili), the proactive policy stays on standby and does not generate summaries itself.
 - **Single-turn protection**: a single-step turn that never produced `step/end` has no safe cut point, so the plugin skips it and leaves it to the built-in policy.
 - **WebSocket is read-only**: only `hello` / `snapshot` / `ping` are supported; client commands are never executed, and paths specified by the client are never read or written; the Origin must be same-origin loopback, and a process-level token is also required.
-- **Local trust boundary**: `/api/ws-token` has no user login state; any process on this machine can fetch the token. The panel is suitable for single-user loopback only; do not expose the GUI port to a LAN or the public internet. See [WEBSOCKET_REVIEW.en.md](./WEBSOCKET_REVIEW.en.md).
+- **Local trust boundary**: `/api/ws-token` has no user login state; any process on this machine can fetch the token. The panel is suitable for single-user loopback only; do not expose the GUI port to a LAN or the public internet. See [WEBSOCKET_REVIEW.en.md](./docs/WEBSOCKET_REVIEW.en.md).
 
 ## Verification
 
@@ -247,7 +247,7 @@ The tests cover:
 
 For real post-install verification, check `status.json`: the current session should appear in `sessions[]`, and `tokens` and `lastSkipReason` should update with every model request. In a profile where native compaction is available, `compactions` and `tokensSaved` grow once pressure passes the trigger line, and the log shows `auto-context-compression: compacted ...`; in the current bili-managed profile the proactive policy shows `no-compaction-service`, which is expected behavior.
 
-On 2026-10-31 a one-shot subagent was used for a real compaction verification (native compaction was still available at that time): with a temporary threshold of 2% and the interactive session excluded, the subagent session produced a complete `compaction/start → compaction/summary → user/message(replace) → compaction/end` transaction, saving 14,371 tokens, and the subagent still completed its answer normally. The production configuration of 50% / 35% was restored afterwards. Evidence: [VERIFICATION.en.md](./VERIFICATION.en.md).
+On 2026-10-31 a one-shot subagent was used for a real compaction verification (native compaction was still available at that time): with a temporary threshold of 2% and the interactive session excluded, the subagent session produced a complete `compaction/start → compaction/summary → user/message(replace) → compaction/end` transaction, saving 14,371 tokens, and the subagent still completed its answer normally. The production configuration of 50% / 35% was restored afterwards. Evidence: [VERIFICATION.en.md](./docs/VERIFICATION.en.md).
 
 ## Known limitations
 
@@ -264,15 +264,17 @@ On 2026-10-31 a one-shot subagent was used for a real compaction verification (n
 
 ## Documentation
 
-- [GITHUB.en.md](./GITHUB.en.md): complete command checklist for uploading to GitHub;
-- [SECURITY_REVIEW.en.md](./SECURITY_REVIEW.en.md): whole-project security review report;
-- [WEBSOCKET_REVIEW.en.md](./WEBSOCKET_REVIEW.en.md): dedicated WebSocket self-review;
-- [VERIFICATION.en.md](./VERIFICATION.en.md): test and real-world verification record.
+All project documents live in [`docs/`](./docs/README.md); the root keeps only the Chinese and English READMEs.
+
+- [GITHUB.en.md](./docs/GITHUB.en.md): complete command checklist for uploading to GitHub;
+- [SECURITY_REVIEW.en.md](./docs/SECURITY_REVIEW.en.md): whole-project security review report;
+- [WEBSOCKET_REVIEW.en.md](./docs/WEBSOCKET_REVIEW.en.md): dedicated WebSocket self-review;
+- [VERIFICATION.en.md](./docs/VERIFICATION.en.md): test and real-world verification record.
 
 Chinese originals:
 
 - [README.md](./README.md)
-- [GITHUB.md](./GITHUB.md)
-- [SECURITY_REVIEW.md](./SECURITY_REVIEW.md)
-- [WEBSOCKET_REVIEW.md](./WEBSOCKET_REVIEW.md)
-- [VERIFICATION.md](./VERIFICATION.md)
+- [GITHUB.md](./docs/GITHUB.md)
+- [SECURITY_REVIEW.md](./docs/SECURITY_REVIEW.md)
+- [WEBSOCKET_REVIEW.md](./docs/WEBSOCKET_REVIEW.md)
+- [VERIFICATION.md](./docs/VERIFICATION.md)

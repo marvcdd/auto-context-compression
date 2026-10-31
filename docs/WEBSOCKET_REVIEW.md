@@ -1,9 +1,9 @@
-# WebSocket 服务自审报告
+﻿# WebSocket 服务自审报告
 
 > [English](./WEBSOCKET_REVIEW.en.md) | 简体中文
 
 日期：2026-10-31  
-审核对象：[`lib/ws.js`](lib/ws.js) 及其 Host/Client 接入  
+审核对象：[`lib/ws.js`](../lib/ws.js) 及其 Host/Client 接入  
 运行环境：DSH Desktop，Web GUI `http://127.0.0.1:51890`，Windows，Node.js 24  
 审核方式：源码逐行审查 + 单元测试 + 本机真实握手/推送验证  
 报告用途：交给外部审查者复查，不代表独立第三方安全审计
@@ -296,7 +296,7 @@ GET http://127.0.0.1:51890/auto-context-compression/api/ws-token
                     token:"<43 chars>"}}
 ```
 
-[`tools/ws-probe.mjs`](tools/ws-probe.mjs) 真实握手并接收 snapshot：
+[`tools/ws-probe.mjs`](../tools/ws-probe.mjs) 真实握手并接收 snapshot：
 
 ```json
 {
@@ -317,7 +317,7 @@ GET http://127.0.0.1:51890/auto-context-compression/api/ws-token
 
 ### 9.3 实时推送验证（修复重复首帧后）
 
-Host 重载后，[`tools/ws-probe.mjs`](tools/ws-probe.mjs) 只发送一次 `hello`，收到两帧：
+Host 重载后，[`tools/ws-probe.mjs`](../tools/ws-probe.mjs) 只发送一次 `hello`，收到两帧：
 
 ```text
 snapshot 1: elapsed 312ms, engine billion-context, requests 608, savedUsd 0.2449
@@ -361,11 +361,11 @@ tick 相位影响，可能小于 1 秒；这不影响“无需轮询即可收到
 
 | 内容 | 位置 |
 |---|---|
-| WebSocket 握手/帧/心跳/限流 | [`lib/ws.js`](lib/ws.js) |
-| `/api/ws-token`、`registerUpgrade`、1 秒广播、dispose | [`lib/index.js`](lib/index.js) |
-| 浏览器连接、重连、下载 Markdown/PNG | [`client.js`](client.js) |
-| WebSocket 单元测试 | [`test/ws.test.js`](test/ws.test.js) |
-| 路由/客户端契约测试 | [`test/plugin.test.js`](test/plugin.test.js) |
-| 真实握手探针 | [`tools/ws-probe.mjs`](tools/ws-probe.mjs) |
+| WebSocket 握手/帧/心跳/限流 | [`lib/ws.js`](../lib/ws.js) |
+| `/api/ws-token`、`registerUpgrade`、1 秒广播、dispose | [`lib/index.js`](../lib/index.js) |
+| 浏览器连接、重连、下载 Markdown/PNG | [`client.js`](../client.js) |
+| WebSocket 单元测试 | [`test/ws.test.js`](../test/ws.test.js) |
+| 路由/客户端契约测试 | [`test/plugin.test.js`](../test/plugin.test.js) |
+| 真实握手探针 | [`tools/ws-probe.mjs`](../tools/ws-probe.mjs) |
 | 运行状态与 bili 账本 | `http://127.0.0.1:51890/auto-context-compression/api/status` |
 | WebSocket token | `http://127.0.0.1:51890/auto-context-compression/api/ws-token` |

@@ -1,4 +1,4 @@
-# 全项目安全审查报告
+﻿# 全项目安全审查报告
 
 > [English](./SECURITY_REVIEW.en.md) | 简体中文
 
@@ -37,12 +37,12 @@
 
 审查文件：
 
-- [`lib/index.js`](lib/index.js)：Host 插件、HTTP 路由、WebSocket 挂载、bili 读取、状态文件、客户端注册；
-- [`lib/policy.js`](lib/policy.js)：配置校验与压缩计划；
-- [`lib/ws.js`](lib/ws.js)：WebSocket 握手、帧解析、限流、心跳、广播；
-- [`client.js`](client.js)：原生 React 面板、连接/重连、Markdown/PNG 下载；
-- [`package.json`](package.json)、[`cordis.patch.yml`](cordis.patch.yml)、[`icon.svg`](icon.svg)、[`locale/`](locale/) 与测试；
-- [`README.md`](README.md)、[`VERIFICATION.md`](VERIFICATION.md)、[`WEBSOCKET_REVIEW.md`](WEBSOCKET_REVIEW.md)。
+- [`lib/index.js`](../lib/index.js)：Host 插件、HTTP 路由、WebSocket 挂载、bili 读取、状态文件、客户端注册；
+- [`lib/policy.js`](../lib/policy.js)：配置校验与压缩计划；
+- [`lib/ws.js`](../lib/ws.js)：WebSocket 握手、帧解析、限流、心跳、广播；
+- [`client.js`](../client.js)：原生 React 面板、连接/重连、Markdown/PNG 下载；
+- [`package.json`](../package.json)、[`cordis.patch.yml`](../cordis.patch.yml)、[`icon.svg`](../icon.svg)、[`locale/`](../locale/) 与测试；
+- [`README.md`](../README.md)、[`VERIFICATION.md`](VERIFICATION.md)、[`WEBSOCKET_REVIEW.md`](WEBSOCKET_REVIEW.md)。
 
 方法：
 
@@ -122,7 +122,7 @@ DSH Host 进程
 
 ### S-01 未认证的 WebSocket 能力端点
 
-**位置**：[`lib/index.js`](lib/index.js) 中 `/api/ws-token` 分支；[`lib/ws.js`](lib/ws.js) 的 Origin/token 校验。
+**位置**：[`lib/index.js`](../lib/index.js) 中 `/api/ws-token` 分支；[`lib/ws.js`](../lib/ws.js) 的 Origin/token 校验。
 
 **证据**：
 
@@ -140,17 +140,17 @@ GET /auto-context-compression/api/ws-token
 
 ### S-02 clientModules 私有 API 依赖
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `clientDiagnostics()` / `ensureClientRegistration()`。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `clientDiagnostics()` / `ensureClientRegistration()`。
 
 **证据**：注册使用 `ctx.get('clientModules')` 的公开图查询，但实际修复路径访问 `ctx.reflect.get('clientModules')` 的 `sources`、`reconcilePackage`、`compose`、`notifyGraphChanged`、`rebuilt`。这些不是稳定公开契约。
 
-**影响**：DSH 升级后可能：启动图不包含本插件、重复入口、或 `rebuilt` 抛错。最坏情况是面板不出现或页面加载错误；由于注入的是本仓库 [`client.js`](client.js)，不会直接引入新的远程代码执行面。若 DSH 未来改变 bundle 解析语义，应优先改用公开的 `dsh.client` 扫描/热更新机制。
+**影响**：DSH 升级后可能：启动图不包含本插件、重复入口、或 `rebuilt` 抛错。最坏情况是面板不出现或页面加载错误；由于注入的是本仓库 [`client.js`](../client.js)，不会直接引入新的远程代码执行面。若 DSH 未来改变 bundle 解析语义，应优先改用公开的 `dsh.client` 扫描/热更新机制。
 
 **处置**：接受并记录；启动时只执行一次，公开 `debug=1` 路由不再触发写操作。升级 DSH 后必须回归“`conversation.view` 中存在 `auto-context`”与 `clientPath` 非空。
 
 ### S-03 缺少会话级授权
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `findAgent()` 与 `buildLiveValue()`。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `findAgent()` 与 `buildLiveValue()`。
 
 **证据**：`findAgent(sessionId)` 精确匹配 `agent.id` 或 `agent.session.id`；未命中时返回 `agents[agents.length - 1]`。HTTP 和 WS 都可传任意 `sessionId`。
 
@@ -160,7 +160,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-04 状态接口无速率限制
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `handleStatusRequest()` → `refreshState()` → `tokenMeter.measure()` + `fetchBiliDetail()`。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `handleStatusRequest()` → `refreshState()` → `tokenMeter.measure()` + `fetchBiliDetail()`。
 
 **影响**：同源页面或本机脚本可高频 GET，触发 token 测量和 bili 请求，造成 CPU/文件句柄压力。当前有 2 秒 bili 缓存、1200ms 超时、8MiB 响应上限，但没有 HTTP 层令牌桶。
 
@@ -168,7 +168,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-05 连接数与握手无限速
 
-**位置**：[`lib/ws.js`](lib/ws.js) 的 `maxClients` 与握手路径。
+**位置**：[`lib/ws.js`](../lib/ws.js) 的 `maxClients` 与握手路径。
 
 **影响**：全局最多 8 个客户端，但没有 per-IP 限制；攻击者可快速重连、占满 8 个槽位，或反复触发 101/401 握手消耗 CPU。已限制单连接 50 条消息/秒、心跳/空闲回收。
 
@@ -176,7 +176,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-06 loopback HTTP 与 token 位置
 
-**位置**：[`client.js`](client.js) 的 `new WebSocket(url, [protocol, token])`；[`lib/ws.js`](lib/ws.js) 的协议选择。
+**位置**：[`client.js`](../client.js) 的 `new WebSocket(url, [protocol, token])`；[`lib/ws.js`](../lib/ws.js) 的协议选择。
 
 **影响**：本地 HTTP 无 TLS；token 出现在 `Sec-WebSocket-Protocol` 请求头，可能被企业代理、浏览器扩展或调试日志记录。token 在插件进程生命周期内不变，重放窗口较长。
 
@@ -192,7 +192,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-08 biliOrigin 的本机 SSRF 面
 
-**位置**：[`lib/policy.js`](lib/policy.js) 的 `biliOrigin` 校验；[`lib/index.js`](lib/index.js) 的 `fetchBiliDetail()`。
+**位置**：[`lib/policy.js`](../lib/policy.js) 的 `biliOrigin` 校验；[`lib/index.js`](../lib/index.js) 的 `fetchBiliDetail()`。
 
 **证据**：只允许 `http/https` 且 host 为 `127.0.0.1`、`localhost`、`::1`；路径固定为 `/__bili/sessions/<encoded id>/detail`；2 秒缓存、1200ms 超时、8MiB 响应上限。
 
@@ -202,7 +202,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-09 状态/配置文件中的元数据
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `writeStatus()`、`ensureDefaultConfigFile()`。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `writeStatus()`、`ensureDefaultConfigFile()`。
 
 **影响**：`status.json` 含会话 id、绝对路径、最后错误、配置；`config.json` 含 biliOrigin、排除列表。它们依赖 `$DSH_HOME` 的 OS ACL；没有显式 chmod/加密。
 
@@ -210,7 +210,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-10 错误信息外泄
 
-**位置**：[`lib/index.js`](lib/index.js) 的 HTTP 500 与 `biliError`；[`lib/ws.js`](lib/ws.js) 的 snapshot 错误。
+**位置**：[`lib/index.js`](../lib/index.js) 的 HTTP 500 与 `biliError`；[`lib/ws.js`](../lib/ws.js) 的 snapshot 错误。
 
 **现状**：HTTP 500 已改为通用 `internal error` 并记录日志；WS snapshot 已改为 `snapshot unavailable`；`biliError` 仍会返回本机 bili 的连接/HTTP 错误文本。
 
@@ -220,7 +220,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-11 帧解析与背压边界
 
-**位置**：[`lib/ws.js`](lib/ws.js) 的 `FrameParser`、`pushSnapshot()`、`closeClient()`。
+**位置**：[`lib/ws.js`](../lib/ws.js) 的 `FrameParser`、`pushSnapshot()`、`closeClient()`。
 
 **观察**：
 
@@ -234,7 +234,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-12 CSRF 保护不完整
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `Sec-Fetch-Site` 检查。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `Sec-Fetch-Site` 检查。
 
 **影响**：`Sec-Fetch-Site` 是可选的浏览器头；`curl`、本地脚本可以不带。由于 token endpoint 本身无认证，真正的防线是 loopback + token；不能把它当作 CSRF 认证。
 
@@ -242,7 +242,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-13 下载文件包含元数据
 
-**位置**：[`client.js`](client.js) 的 `downloadReportFile()` / `renderReportImage()`。
+**位置**：[`client.js`](../client.js) 的 `downloadReportFile()` / `renderReportImage()`。
 
 **影响**：导出的 Markdown/PNG 含标题、会话 id、路径、用量与 bili 账本；文件由用户主动保存，不会自动上传。
 
@@ -250,7 +250,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-14 缺少连接审计
 
-**位置**：[`lib/ws.js`](lib/ws.js)、[`lib/index.js`](lib/index.js)。
+**位置**：[`lib/ws.js`](../lib/ws.js)、[`lib/index.js`](../lib/index.js)。
 
 **影响**：只记录挂载/警告，不记录 token 签发、连接来源、拒绝原因计数；事故追溯能力有限。
 
@@ -258,7 +258,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-15 状态文件非原子写
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `writeStatus()`。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `writeStatus()`。
 
 **影响**：`writeFile` 期间读取方可能看到截断 JSON；不是安全漏洞，但会影响外部监控。
 
@@ -266,7 +266,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-16 客户端 bundle 完整性
 
-**位置**：[`lib/index.js`](lib/index.js) 的 `clientPath` 注册、[`client.js`](client.js)。
+**位置**：[`lib/index.js`](../lib/index.js) 的 `clientPath` 注册、[`client.js`](../client.js)。
 
 **影响**：浏览器从同源 Host 加载 `client.js`；没有 SRI/签名，信任根是本地包与 DSH bundle 路由。能改包的人已经能在 Host 执行代码，因此不构成额外提权，但供应链审计需覆盖 npm 包/本地链接。
 
@@ -274,7 +274,7 @@ GET /auto-context-compression/api/ws-token
 
 ### S-17 客户端可触发 snapshot 构建
 
-**位置**：[`lib/ws.js`](lib/ws.js) 的 `message.type === 'snapshot'`。
+**位置**：[`lib/ws.js`](../lib/ws.js) 的 `message.type === 'snapshot'`。
 
 **影响**：连接者可请求一次即时构建，触发 `refreshState()`/bili 读取；受 50 条/秒限制和 8 客户端限制。属于本地资源消耗，不是数据越权。
 
@@ -347,13 +347,13 @@ node --test test/*.test.js
 
 | 内容 | 位置 |
 | --- | --- |
-| Host 路由、token、状态文件 | [`lib/index.js`](lib/index.js) |
-| bili 账本读取与字段裁剪 | [`lib/bili.js`](lib/bili.js) |
-| 客户端半区启动注册（DSH 私有 API） | [`lib/client-registration.js`](lib/client-registration.js) |
-| 配置校验与压缩策略 | [`lib/policy.js`](lib/policy.js) |
-| WebSocket 握手/帧/限流/心跳 | [`lib/ws.js`](lib/ws.js) |
-| 原生面板、连接、下载 | [`client.js`](client.js) |
+| Host 路由、token、状态文件 | [`lib/index.js`](../lib/index.js) |
+| bili 账本读取与字段裁剪 | [`lib/bili.js`](../lib/bili.js) |
+| 客户端半区启动注册（DSH 私有 API） | [`lib/client-registration.js`](../lib/client-registration.js) |
+| 配置校验与压缩策略 | [`lib/policy.js`](../lib/policy.js) |
+| WebSocket 握手/帧/限流/心跳 | [`lib/ws.js`](../lib/ws.js) |
+| 原生面板、连接、下载 | [`client.js`](../client.js) |
 | WebSocket 专项报告 | [`WEBSOCKET_REVIEW.md`](WEBSOCKET_REVIEW.md) |
 | 验证记录 | [`VERIFICATION.md`](VERIFICATION.md) |
 | Git/GitHub 上传命令 | [`GITHUB.md`](GITHUB.md) |
-| 真实握手探针 | [`tools/ws-probe.mjs`](tools/ws-probe.mjs) |
+| 真实握手探针 | [`tools/ws-probe.mjs`](../tools/ws-probe.mjs) |
